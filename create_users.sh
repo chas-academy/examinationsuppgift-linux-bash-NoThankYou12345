@@ -17,10 +17,10 @@ existing_users=$(cut -d: -f1 /etc/passwd)
 
 for username in "$@"; do
 
-  # skapa användare
-  useradd -m "$username" 2>/dev/null
+  # skapa användare (fixad rad)
+  id "$username" &>/dev/null || useradd -m "$username"
 
-  # hämta hemkatalog (viktigt för test)
+  # hämta hemkatalog (fixad rad)
   home_dir=$(getent passwd "$username" | cut -d: -f6)
 
   # skapa mappar
@@ -45,3 +45,5 @@ for username in "$@"; do
   chown "$username:$username" "$home_dir/welcome.txt"
 
 done
+
+echo "klart"
