@@ -5,7 +5,7 @@ if [ "$EUID" -ne 0 ]; then
     exit 1
 fi
 
-# OM inga argument → skapa egna (VIKTIGT)
+# # om inga användare anges
 if [ "$#" -eq 0 ]; then
     set -- Anna Bjorn Charlie
 fi
