@@ -1,32 +1,32 @@
 #!/bin/bash
 
-# kollar root
+# kolla root
 if [ "$EUID" -ne 0 ]; then
   echo "Måste köras som root"
   exit 1
 fi
 
-# kollar argument
+# kolla argument
 if [ "$#" -eq 0 ]; then
   echo "Användning: $0 användare..."
   exit 1
 fi
 
-# befintliga användare
+# hämta befintliga användare
 existing_users=$(cut -d: -f1 /etc/passwd)
 
 for username in "$@"; do
 
-  # skapa användare
-  id "$username" &>/dev/null || useradd -m "$username"
+  # skapa användare + hemkatalog
+  useradd -m "$username"
 
-  # FIX: sätt hemkatalog direkt
+  # hemkatalog (enkelt, inget krångel)
   home_dir="/home/$username"
 
   # skapa mappar
-  mkdir -p "$home_dir/Documents"
-  mkdir -p "$home_dir/Downloads"
-  mkdir -p "$home_dir/Work"
+  mkdir "$home_dir/Documents"
+  mkdir "$home_dir/Downloads"
+  mkdir "$home_dir/Work"
 
   # rättigheter
   chown -R "$username:$username" "$home_dir"
@@ -34,7 +34,7 @@ for username in "$@"; do
   chmod 700 "$home_dir/Downloads"
   chmod 700 "$home_dir/Work"
 
-  # welcome
+  # welcome-fil
   echo "Välkommen $username" > "$home_dir/welcome.txt"
   echo "" >> "$home_dir/welcome.txt"
   echo "Andra användare på systemet:" >> "$home_dir/welcome.txt"
@@ -43,5 +43,3 @@ for username in "$@"; do
   chown "$username:$username" "$home_dir/welcome.txt"
 
 done
-
-echo "klart"
