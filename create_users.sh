@@ -6,23 +6,22 @@ if [ "$EUID" -ne 0 ]; then
   exit 1
 fi
 
-# om inga argument skickas
+# kollar argument
 if [ "$#" -eq 0 ]; then
-  users=("user1" "user2")
-else
-  users=("$@")
+  echo "Användning: $0 användare..."
+  exit 1
 fi
 
 # befintliga användare
 existing_users=$(cut -d: -f1 /etc/passwd)
 
-for username in "${users[@]}"; do
+for username in "$@"; do
 
   # skapa användare
-  id "$username" &>/dev/null || useradd -m "$username" 2>/dev/null
+  id "$username" &>/dev/null || useradd -m "$username"
 
-  # hemkatalog
-  home_dir=$(getent passwd "$username" | cut -d: -f6)
+  # FIX: sätt hemkatalog direkt
+  home_dir="/home/$username"
 
   # skapa mappar
   mkdir -p "$home_dir/Documents"
