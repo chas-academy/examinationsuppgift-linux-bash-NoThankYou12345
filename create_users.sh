@@ -1,36 +1,44 @@
 #!/bin/bash
 
-# kollar root
+# Kontrollera root
 if [ "$EUID" -ne 0 ]; then
-  echo "Måste köras som root"
-  exit 1
+    echo "Fel: Detta skript måste köras som root."
+    exit 1
 fi
 
-# befintliga användare
-existing_users=$(cut -d: -f1 /etc/passwd)
+# Kontrollera argument
+if [ "$#" -eq 0 ]; then
+    echo "Användning: $0 användare1 [användare2 ...]"
+    exit 1
+fi
 
-# loop
-for username in "$@"; do
+# Loopar igenom användare
+for user in "$@"; do
 
-  # fake home-katalog (ISTÄLLET för /home)
-  home_dir="./home/$username"
+    # Skapa användare (ta bort skip-logik)
+    useradd -m "$user" 2>/dev/null
 
-  # skapa mappar
-  mkdir -p "$home_dir/Documents"
-  mkdir -p "$home_dir/Downloads"
-  mkdir -p "$home_dir/Work"
+    home="/home/$user"
 
-  # rättigheter
-  chmod 700 "$home_dir/Documents"
-  chmod 700 "$home_dir/Downloads"
-  chmod 700 "$home_dir/Work"
+    # Skapa mappar
+    mkdir -p "$home/Documents"
+    mkdir -p "$home/Downloads"
+    mkdir -p "$home/Work"
 
-  # welcome
-  echo "Välkommen $username" > "$home_dir/welcome.txt"
-  echo "" >> "$home_dir/welcome.txt"
-  echo "Andra användare på systemet:" >> "$home_dir/welcome.txt"
-  echo "$existing_users" >> "$home_dir/welcome.txt"
+    # Rättigheter
+    chmod 700 "$home/Documents"
+    chmod 700 "$home/Downloads"
+    chmod 700 "$home/Work"
+
+    # Welcome-fil
+    echo "Välkommen $user" > "$home/welcome.txt"
+    echo "Andra användare på systemet:" >> "$home/welcome.txt"
+    cut -d: -f1 /etc/passwd | grep -v "^$user$" >> "$home/welcome.txt"
+
+    # Sätt ägare
+    chown "$user:$user" "$home/welcome.txt"
+    chown "$user:$user" "$home/Documents" "$home/Downloads" "$home/Work"
 
 done
 
-echo "klart"
+echo "Klart"
