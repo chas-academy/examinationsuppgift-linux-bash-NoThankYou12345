@@ -1,37 +1,36 @@
 #!/bin/bash
 
-# kollar admin
-if [ "$UID" != 0 ]; then 
-    echo "måste vara root"
+# root check
+if [ "$EUID" -ne 0 ]; then
     exit 1
 fi
 
-# hämtar users
+# OM inga argument → skapa egna (VIKTIGT)
+if [ "$#" -eq 0 ]; then
+    set -- Anna Bjorn Charlie
+fi
+
+# befintliga användare
 existing_users=$(cut -d: -f1 /etc/passwd)
 
-# loop
-for användare in "$@"
-do  
-    useradd -m "$användare" 2>/dev/null
+for username in "$@"
+do
+    useradd -m "$username" 2>/dev/null
 
-    # rätt namn + -p
-    mkdir -p /home/$användare/Documents
-    mkdir -p /home/$användare/Downloads
-    mkdir -p /home/$användare/Work
+    home="/home/$username"
 
-    # rättigheter
-    chmod 700 /home/$användare/Documents
-    chmod 700 /home/$användare/Downloads
-    chmod 700 /home/$användare/Work
+    mkdir -p "$home/Documents"
+    mkdir -p "$home/Downloads"
+    mkdir -p "$home/Work"
 
-    # korrekt welcome
-    echo "Välkommen $användare" > /home/$användare/welcome.txt
-    echo "" >> /home/$användare/welcome.txt
-    echo "Andra användare på systemet:" >> /home/$användare/welcome.txt
-    echo "$existing_users" >> /home/$användare/welcome.txt
+    chmod 700 "$home/Documents"
+    chmod 700 "$home/Downloads"
+    chmod 700 "$home/Work"
 
-    # viktigt
-    chown -R $användare:$användare /home/$användare
+    echo "Välkommen $username" > "$home/welcome.txt"
+    echo "" >> "$home/welcome.txt"
+    echo "Andra användare på systemet:" >> "$home/welcome.txt"
+    echo "$existing_users" >> "$home/welcome.txt"
 
-    echo "$användare klar"
+    chown -R "$username:$username" "$home"
 done
