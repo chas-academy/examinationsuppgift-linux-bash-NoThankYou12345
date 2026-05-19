@@ -5,9 +5,10 @@ if [ "$EUID" -ne 0 ]; then
     exit 1
 fi
 
-# # om inga användare anges
+# om inga användare anges
 if [ "$#" -eq 0 ]; then
-    set -- Anna Bjorn Charlie
+    echo "ange minst en användare"
+    exit 1
 fi
 
 # befintliga användare
